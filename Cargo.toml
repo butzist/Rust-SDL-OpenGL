@@ -9,7 +9,7 @@ edition = "2018"
 
 [dependencies]
 glium = "0.25"
-glium_sdl2 = { path = "lib/glium-sdl2" }
+glium_sdl2 = { git = "https://github.com/butzist/glium-sdl2" }
 
 [dependencies.sdl2]
 version = "0.31"

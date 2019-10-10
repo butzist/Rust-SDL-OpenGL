@@ -13,21 +13,23 @@ fn main() {
 
     #[derive(Copy, Clone)]
     struct Vertex {
-        position: [f32; 2],
+        position: [f32; 3],
     }
-
     glium::implement_vertex!(Vertex, position);
 
-    let vertex1 = Vertex {
-        position: [-0.5, -0.5],
-    };
-    let vertex2 = Vertex {
-        position: [0.0, 0.5],
-    };
-    let vertex3 = Vertex {
-        position: [0.5, -0.25],
-    };
-    let shape = vec![vertex1, vertex2, vertex3];
+    impl Vertex {
+        fn new(x: f32, y: f32, z: f32) -> Vertex {
+            Vertex {
+                position: [x, y, z],
+            }
+        }
+    }
+
+    let shape = vec![
+        Vertex::new(-0.5, -0.5, 0.0),
+        Vertex::new(0.0, 0.5, 0.0),
+        Vertex::new(0.5, -0.25, 0.0),
+    ];
 
     let vertex_buffer = glium::VertexBuffer::new(&display, &shape).unwrap();
     let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);

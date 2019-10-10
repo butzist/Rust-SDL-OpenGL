@@ -1,0 +1,16 @@
+[package]
+name = "sdltest"
+version = "0.1.0"
+authors = ["Adam Szalkowski <adam@szalkowski.de>"]
+edition = "2018"
+#build = "build.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+glium = "0.25"
+glium_sdl2 = { path = "lib/glium-sdl2" }
+
+[dependencies.sdl2]
+version = "0.31"
+features = ["bundled", "static-link"]

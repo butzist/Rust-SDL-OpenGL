@@ -6,7 +6,7 @@ fn main() {
     let video_subsystem = sdl_context.video().unwrap();
 
     let display = video_subsystem
-        .window("Tutorial 01", 800, 600)
+        .window("OpenGL SDL", 800, 600)
         .resizable()
         .build_glium()
         .unwrap();
@@ -19,18 +19,23 @@ fn main() {
     glium::implement_vertex!(Vertex, position, color);
 
     impl Vertex {
-        fn new(x: f32, y: f32, z: f32, r: f32, g: f32, b: f32) -> Vertex {
+        fn new(x: f32, y: f32, z: f32) -> Vertex {
             Vertex {
                 position: [x, y, z],
-                color: [r, g, b],
+                color: [0., 0., 0.],
             }
+        }
+
+        fn color(mut self, r: f32, g: f32, b: f32) -> Vertex {
+            self.color = [r, g, b];
+            self
         }
     }
 
     let shape = vec![
-        Vertex::new(-0.5, -0.5, 0.0, 1.0, 0.0, 0.0),
-        Vertex::new(0.0, 0.5, 0.0, 0.0, 1.0, 0.0),
-        Vertex::new(0.5, -0.25, 0.0, 0.0, 0.0, 1.0),
+        Vertex::new(-0.5, -0.5, 0.0).color(1.0, 0.0, 0.0),
+        Vertex::new(0.0, 0.5, 0.0).color(0.0, 1.0, 0.0),
+        Vertex::new(0.5, -0.25, 0.0).color(0.0, 0.0, 1.0),
     ];
 
     let vertex_buffer = glium::VertexBuffer::new(&display, &shape).unwrap();

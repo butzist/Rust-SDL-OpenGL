@@ -14,21 +14,23 @@ fn main() {
     #[derive(Copy, Clone)]
     struct Vertex {
         position: [f32; 3],
+        color: [f32; 3],
     }
-    glium::implement_vertex!(Vertex, position);
+    glium::implement_vertex!(Vertex, position, color);
 
     impl Vertex {
-        fn new(x: f32, y: f32, z: f32) -> Vertex {
+        fn new(x: f32, y: f32, z: f32, r: f32, g: f32, b: f32) -> Vertex {
             Vertex {
                 position: [x, y, z],
+                color: [r, g, b],
             }
         }
     }
 
     let shape = vec![
-        Vertex::new(-0.5, -0.5, 0.0),
-        Vertex::new(0.0, 0.5, 0.0),
-        Vertex::new(0.5, -0.25, 0.0),
+        Vertex::new(-0.5, -0.5, 0.0, 1.0, 0.0, 0.0),
+        Vertex::new(0.0, 0.5, 0.0, 0.0, 1.0, 0.0),
+        Vertex::new(0.5, -0.25, 0.0, 0.0, 0.0, 1.0),
     ];
 
     let vertex_buffer = glium::VertexBuffer::new(&display, &shape).unwrap();

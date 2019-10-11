@@ -56,7 +56,7 @@ fn main() {
     let time = SystemTime::now();
 
     while running {
-        let t = time.elapsed().unwrap().as_millis() as f32 / 1000.0;
+        let t = time.elapsed().unwrap().as_millis() as f32 / 1000.0; // precision reduced after 4.6h
         let mut frame = display.draw();
         frame.clear_color(0.0, 0.0, 0.0, 1.0);
         frame
@@ -64,7 +64,7 @@ fn main() {
                 &vertex_buffer,
                 &indices,
                 &program,
-                &glium::uniform! {theta : 0.1 * t * 2. * std::f32::consts::PI},
+                &glium::uniform! {theta : (0.1 * t) % 1.0 * 2. * std::f32::consts::PI},
                 &Default::default(),
             )
             .unwrap();

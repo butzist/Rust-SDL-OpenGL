@@ -1,7 +1,8 @@
-fn main() {
-    use glium::Surface;
-    use glium_sdl2::DisplayBuild;
+use glium::Surface;
+use glium_sdl2::DisplayBuild;
+use sdl2::event::Event;
 
+fn main() {
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
 
@@ -53,9 +54,9 @@ fn main() {
     let mut event_pump = sdl_context.event_pump().unwrap();
 
     while running {
-        let mut target = display.draw();
-        target.clear_color(0.0, 0.0, 1.0, 1.0);
-        target
+        let mut frame = display.draw();
+        frame.clear_color(0.0, 0.0, 0.0, 1.0);
+        frame
             .draw(
                 &vertex_buffer,
                 &indices,
@@ -64,11 +65,9 @@ fn main() {
                 &Default::default(),
             )
             .unwrap();
-        target.finish().unwrap();
+        frame.finish().unwrap();
 
         for event in event_pump.poll_iter() {
-            use sdl2::event::Event;
-
             match event {
                 Event::Quit { .. } => running = false,
                 _ => (),

@@ -1,6 +1,7 @@
 use glium::Surface;
 use glium_sdl2::DisplayBuild;
 use sdl2::event::Event;
+use std::time::SystemTime;
 
 fn main() {
     let sdl_context = sdl2::init().unwrap();
@@ -14,15 +15,15 @@ fn main() {
 
     #[derive(Copy, Clone)]
     struct Vertex {
-        position: [f32; 3],
+        position: [f32; 2],
         color: [f32; 3],
     }
     glium::implement_vertex!(Vertex, position, color);
 
     impl Vertex {
-        fn new(x: f32, y: f32, z: f32) -> Vertex {
+        fn new(x: f32, y: f32) -> Vertex {
             Vertex {
-                position: [x, y, z],
+                position: [x, y],
                 color: [0., 0., 0.],
             }
         }
@@ -34,9 +35,9 @@ fn main() {
     }
 
     let shape = vec![
-        Vertex::new(-0.5, -0.5, 0.0).color(1.0, 0.0, 0.0),
-        Vertex::new(0.0, 0.5, 0.0).color(0.0, 1.0, 0.0),
-        Vertex::new(0.5, -0.25, 0.0).color(0.0, 0.0, 1.0),
+        Vertex::new(-0.5, -0.5).color(1.0, 0.0, 0.0),
+        Vertex::new(0.0, 0.5).color(0.0, 1.0, 0.0),
+        Vertex::new(0.5, -0.25).color(0.0, 0.0, 1.0),
     ];
 
     let vertex_buffer = glium::VertexBuffer::new(&display, &shape).unwrap();
@@ -52,8 +53,10 @@ fn main() {
 
     let mut running = true;
     let mut event_pump = sdl_context.event_pump().unwrap();
+    let time = SystemTime::now();
 
     while running {
+        let t = time.elapsed().unwrap().as_millis() as f32 / 1000.0;
         let mut frame = display.draw();
         frame.clear_color(0.0, 0.0, 0.0, 1.0);
         frame
@@ -61,7 +64,7 @@ fn main() {
                 &vertex_buffer,
                 &indices,
                 &program,
-                &glium::uniforms::EmptyUniforms,
+                &glium::uniform! {theta : 0.1 * t * 2. * std::f32::consts::PI},
                 &Default::default(),
             )
             .unwrap();

@@ -2,8 +2,8 @@
 
 uniform mat4 transform;
 in vec3 position;
-in vec3 color;
-out vec3 _color;
+in vec4 color;
+out vec4 _color;
 
 void main()
 {

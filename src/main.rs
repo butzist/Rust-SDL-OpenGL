@@ -8,22 +8,17 @@ use std::*;
 #[derive(Copy, Clone, Debug)]
 struct Vertex {
     position: [f32; 3],
+    normal: [f32; 3],
     color: [f32; 4],
 }
-glium::implement_vertex!(Vertex, position, color);
+glium::implement_vertex!(Vertex, position, normal, color);
 
 impl Vertex {
-    fn new(x: f32, y: f32, z: f32) -> Vertex {
-        Vertex {
-            position: [x, y, z],
-            color: [0., 0., 0., 1.],
-        }
-    }
-
-    fn from_vec(vec: &Vector3<f32>) -> Vertex {
+    fn new(vec: &Vector3<f32>, norm: &Vector3<f32>) -> Vertex {
         Vertex {
             position: [vec.x, vec.y, vec.z],
-            color: [0., 0., 0., 1.],
+            normal: [norm.x, norm.y, norm.z],
+            color: [1., 1., 1., 1.],
         }
     }
 
@@ -43,8 +38,9 @@ fn make_rect(
     let axis = center.normalize();
     let vertex1 = Vector3::from_row_slice(&vertex1) - center;
     let vertexn = |n: usize| {
-        Vertex::from_vec(
+        Vertex::new(
             &(center + Rotation3::new(axis * -f32::consts::FRAC_PI_2 * n as f32) * vertex1),
+            &axis,
         )
         .color(color)
     };
@@ -81,25 +77,25 @@ fn main() {
         ..Default::default()
     };
     let (shape, indices) = [
-        make_rect([0.0, 0.0, 0.5], [0.5, -0.5, 0.5], [1.0, 0.0, 0.0, 0.9], 0),
-        make_rect([0.0, 0.5, 0.0], [0.5, 0.5, 0.5], [0.0, 1.0, 0.0, 0.9], 4),
+        make_rect([0.0, 0.0, 0.5], [0.5, -0.5, 0.5], [1.0, 0.0, 0.0, 0.95], 0),
+        make_rect([0.0, 0.5, 0.0], [0.5, 0.5, 0.5], [0.0, 1.0, 0.0, 0.95], 4),
         make_rect(
             [0.0, -0.5, -0.0],
             [-0.5, -0.5, -0.5],
-            [0.0, 1.0, 0.0, 0.9],
+            [0.0, 1.0, 0.0, 0.95],
             8,
         ),
-        make_rect([0.5, 0.0, 0.0], [0.5, -0.5, 0.5], [0.0, 0.0, 1.0, 0.9], 12),
+        make_rect([0.5, 0.0, 0.0], [0.5, -0.5, 0.5], [0.0, 0.0, 1.0, 0.95], 12),
         make_rect(
             [-0.5, 0.0, 0.0],
             [-0.5, 0.5, -0.5],
-            [0.0, 0.0, 1.0, 0.9],
+            [0.0, 0.0, 1.0, 0.95],
             16,
         ),
         make_rect(
             [0.0, 0.0, -0.5],
             [-0.5, 0.5, -0.5],
-            [1.0, 0.0, 0.0, 0.9],
+            [1.0, 0.0, 0.0, 0.95],
             20,
         ),
     ]
@@ -135,13 +131,19 @@ fn main() {
 
     while running {
         let t = time.elapsed().unwrap().as_millis() as f32 / 1000.0; // precision reduced after 4.6h
-        let theta = (0.4 * t).sin() * 0.5 * std::f32::consts::PI;
-        let sigma = (0.73 * t).cos() * 0.5 * std::f32::consts::PI;
+        let theta = (0.21 * t * std::f32::consts::PI).sin() * 0.5 * std::f32::consts::PI;
+        let sigma = (0.57 * t * std::f32::consts::PI).cos() * 0.5 * std::f32::consts::PI;
         let transform = [
             [theta.cos(), theta.sin(), 0.0, 0.0],
             [-theta.sin(), theta.cos() * sigma.cos(), sigma.sin(), 0.0],
             [0.0, -sigma.sin(), sigma.cos(), 0.0],
             [0.0, 0.0, 0.0, 1.3f32],
+        ];
+        let normal_transform = [
+            // same as transform as long as it is only a rotation
+            [theta.cos(), theta.sin(), 0.0],
+            [-theta.sin(), theta.cos() * sigma.cos(), sigma.sin()],
+            [0.0, -sigma.sin(), sigma.cos()],
         ];
 
         let mut frame = display.draw();
@@ -151,7 +153,13 @@ fn main() {
                 &vertex_buffer,
                 &index_buffer,
                 &program,
-                &glium::uniform! {transform : transform},
+                &glium::uniform! {
+                    transform : transform,
+                    light_color: [1.0f32, 1.0, 1.0],
+                    light_position: [1.0f32, 1.0, 1.0],
+                    light_ambient: 0.1f32,
+                    normal_transform: normal_transform
+                },
                 &params,
             )
             .unwrap();

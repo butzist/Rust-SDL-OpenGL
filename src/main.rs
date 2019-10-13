@@ -1,6 +1,6 @@
 use glium::Surface;
 use glium_sdl2::DisplayBuild;
-use nalgebra::{Rotation3, Vector3};
+use nalgebra::{Matrix4, Rotation3, Vector3, U3};
 use sdl2::event::Event;
 use std::time::SystemTime;
 use std::*;
@@ -14,10 +14,10 @@ struct Vertex {
 glium::implement_vertex!(Vertex, position, normal, color);
 
 impl Vertex {
-    fn new(vec: &Vector3<f32>, norm: &Vector3<f32>) -> Vertex {
+    fn new(vec: Vector3<f32>, norm: Vector3<f32>) -> Vertex {
         Vertex {
-            position: [vec.x, vec.y, vec.z],
-            normal: [norm.x, norm.y, norm.z],
+            position: vec.into(),
+            normal: norm.into(),
             color: [1., 1., 1., 1.],
         }
     }
@@ -39,8 +39,8 @@ fn make_rect(
     let vertex1 = Vector3::from_row_slice(&vertex1) - center;
     let vertexn = |n: usize| {
         Vertex::new(
-            &(center + Rotation3::new(axis * -f32::consts::FRAC_PI_2 * n as f32) * vertex1),
-            &axis,
+            center + Rotation3::new(axis * -f32::consts::FRAC_PI_2 * n as f32) * vertex1,
+            axis,
         )
         .color(color)
     };
@@ -133,18 +133,15 @@ fn main() {
         let t = time.elapsed().unwrap().as_millis() as f32 / 1000.0; // precision reduced after 4.6h
         let theta = (0.21 * t * std::f32::consts::PI).sin() * 0.5 * std::f32::consts::PI;
         let sigma = (0.57 * t * std::f32::consts::PI).cos() * 0.5 * std::f32::consts::PI;
-        let transform = [
-            [theta.cos(), theta.sin(), 0.0, 0.0],
-            [-theta.sin(), theta.cos() * sigma.cos(), sigma.sin(), 0.0],
-            [0.0, -sigma.sin(), sigma.cos(), 0.0],
-            [0.0, 0.0, 0.0, 1.3f32],
-        ];
-        let normal_transform = [
-            // same as transform as long as it is only a rotation
-            [theta.cos(), theta.sin(), 0.0],
-            [-theta.sin(), theta.cos() * sigma.cos(), sigma.sin()],
-            [0.0, -sigma.sin(), sigma.cos()],
-        ];
+
+        let transform = Matrix4::new_rotation(sigma * Vector3::new(1.0f32, 0.0, 0.0))
+            * Matrix4::new_rotation(theta * Vector3::new(0.0f32, 0.0, 1.0))
+            * Matrix4::new_scaling(0.9);
+        let normal_transform = transform
+            .fixed_slice::<U3, U3>(0, 0)
+            .try_inverse()
+            .unwrap()
+            .transpose();
 
         let mut frame = display.draw();
         frame.clear_color_and_depth((0.0, 0.0, 0.0, 1.0), 1.0);
@@ -154,11 +151,11 @@ fn main() {
                 &index_buffer,
                 &program,
                 &glium::uniform! {
-                    transform : transform,
+                    transform : Into::<[[f32; 4]; 4]>::into(transform),
                     light_color: [1.0f32, 1.0, 1.0],
                     light_position: [1.0f32, 1.0, 1.0],
                     light_ambient: 0.1f32,
-                    normal_transform: normal_transform
+                    normal_transform: Into::<[[f32; 3]; 3]>::into(normal_transform)
                 },
                 &params,
             )
